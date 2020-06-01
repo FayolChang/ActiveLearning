@@ -1,0 +1,13 @@
+.idea
+.DS_Store
+*.iml
+*.egg-info
+*.pyc
+*.csv
+*.json
+*.pt
+*.txt
+data
+data2019
+dict
+*dir*
