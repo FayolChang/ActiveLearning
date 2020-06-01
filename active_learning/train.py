@@ -71,7 +71,7 @@ model = BertForSequenceClassification.from_pretrained(pretrained_model_name_or_p
 ###############################################
 # data process
 ###############################################
-train = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / 'data_40_per.json').open())]
+train = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / 'data_60_per_l.json').open())]
 dev = [(_['text'], _['label']) for _ in json.load((Path(common_data_path)/'intent_data' / 'dev_data.json').open())]
 
 vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
