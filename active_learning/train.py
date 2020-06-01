@@ -71,47 +71,10 @@ model = BertForSequenceClassification.from_pretrained(pretrained_model_name_or_p
 ###############################################
 # data process
 ###############################################
-train = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / 'data_60_per_l.json').open())]
+train = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / 'data_80_per_l.json').open())]
 dev = [(_['text'], _['label']) for _ in json.load((Path(common_data_path)/'intent_data' / 'dev_data.json').open())]
 
 vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
-
-
-# class DataGenerator(object):
-#     def __init__(self, data, shuffle=False):
-#         self.data = data
-#         self.shuffle = shuffle
-#         self.steps = len(data) // training_args.batch_size
-#
-#     def __len__(self):
-#         return len(self.data)
-#
-#     def __iter__(self):
-#         if self.shuffle:
-#             np.random.shuffle(self.data)
-#         X, Y, M, T = [], [], [], []
-#         for i, d in enumerate(self.data):
-#             text, label = d
-#
-#             text_ids = [vocabulary.get('[CLS]')] + [vocabulary.get(c, vocabulary.get('[UNK]')) for c in text[:data_args.max_seq_length]]
-#             att_mask = [1] * len(text_ids)
-#
-#             label_id = intent_labels.index(label)
-#
-#             X.append(text_ids)
-#             M.append(att_mask)
-#             Y.append(label_id)
-#             T.append(text)
-#
-#             if len(X) == training_args.batch_size or i == len(self.data) - 1:
-#                 X = torch.tensor(seq_padding(X), dtype=torch.long)
-#                 Y = torch.tensor(Y, dtype=torch.long)
-#                 M = torch.tensor(seq_padding(M), dtype=torch.long)
-#
-#                 yield X, Y, M, T
-#
-#                 X, Y, M, T = [], [], [], []
-
 
 train_loader = DataGenerator(train, training_args, data_args, vocabulary, intent_labels, shuffle=True)
 dev_loader = DataGenerator(dev, training_args, data_args, vocabulary, intent_labels)
