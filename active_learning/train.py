@@ -14,14 +14,13 @@ from torch.utils.tensorboard import SummaryWriter
 from transformers import AdamW, \
     get_linear_schedule_with_warmup, AutoConfig, HfArgumentParser
 
+from active_learning.data_generator import DataGenerator
 from active_learning.model import BertForSequenceClassification
 from active_learning.training_args import TrainingArguments
 from configuration.config import data_dir, roberta_model_path, intent_labels, common_data_path
-
 ###############################################
 # log
 ###############################################
-from utils.utils import seq_padding
 from utils.vocab import load_vocab
 
 logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
@@ -84,44 +83,44 @@ dev = [(_['text'], _['label']) for _ in json.load((Path(common_data_path)/'inten
 vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
 
 
-class DataGenerator(object):
-    def __init__(self, data, shuffle=False):
-        self.data = data
-        self.shuffle = shuffle
-        self.steps = len(data) // training_args.batch_size
+# class DataGenerator(object):
+#     def __init__(self, data, shuffle=False):
+#         self.data = data
+#         self.shuffle = shuffle
+#         self.steps = len(data) // training_args.batch_size
+#
+#     def __len__(self):
+#         return len(self.data)
+#
+#     def __iter__(self):
+#         if self.shuffle:
+#             np.random.shuffle(self.data)
+#         X, Y, M, T = [], [], [], []
+#         for i, d in enumerate(self.data):
+#             text, label = d
+#
+#             text_ids = [vocabulary.get('[CLS]')] + [vocabulary.get(c, vocabulary.get('[UNK]')) for c in text[:data_args.max_seq_length]]
+#             att_mask = [1] * len(text_ids)
+#
+#             label_id = intent_labels.index(label)
+#
+#             X.append(text_ids)
+#             M.append(att_mask)
+#             Y.append(label_id)
+#             T.append(text)
+#
+#             if len(X) == training_args.batch_size or i == len(self.data) - 1:
+#                 X = torch.tensor(seq_padding(X), dtype=torch.long)
+#                 Y = torch.tensor(Y, dtype=torch.long)
+#                 M = torch.tensor(seq_padding(M), dtype=torch.long)
+#
+#                 yield X, Y, M, T
+#
+#                 X, Y, M, T = [], [], [], []
 
-    def __len__(self):
-        return len(self.data)
 
-    def __iter__(self):
-        if self.shuffle:
-            np.random.shuffle(self.data)
-        X, Y, M, T = [], [], [], []
-        for i, d in enumerate(self.data):
-            text, label = d
-
-            text_ids = [vocabulary.get('[CLS]')] + [vocabulary.get(c, vocabulary.get('[UNK]')) for c in text[:data_args.max_seq_length]]
-            att_mask = [1] * len(text_ids)
-
-            label_id = intent_labels.index(label)
-
-            X.append(text_ids)
-            M.append(att_mask)
-            Y.append(label_id)
-            T.append(text)
-
-            if len(X) == training_args.batch_size or i == len(self.data) - 1:
-                X = torch.tensor(seq_padding(X), dtype=torch.long)
-                Y = torch.tensor(Y, dtype=torch.long)
-                M = torch.tensor(seq_padding(M), dtype=torch.long)
-
-                yield X, Y, M, T
-
-                X, Y, M, T = [], [], [], []
-
-
-train_loader = DataGenerator(train, shuffle=True)
-dev_loader = DataGenerator(dev)
+train_loader = DataGenerator(train, training_args, data_args, vocabulary, intent_labels, shuffle=True)
+dev_loader = DataGenerator(dev, training_args, data_args, vocabulary, intent_labels)
 
 ###############################################
 # optimizer
@@ -381,33 +380,6 @@ for e in range(epoch_trained, training_args.epoch_num):
 tb_writer.close()
 
 
-model = BertForSequenceClassification(config, num_labels)
-model.load_state_dict(torch.load(Path(data_dir) / 'cls_model.pt', map_location='cuda' if torch.cuda.is_available() else "cpu"))
-d_80_loader = DataGenerator(d_80)
-d_80_score = []
-for k, batch in enumerate(d_80_loader):
 
-    # if k > 0: break  # debug
-
-    raw_text = batch[-1]
-    batch = [_.to(training_args.device) for _ in batch[:-1]]
-    X_ids, Y_ids, Mask = batch
-    with torch.no_grad():
-        _, logits = model(X_ids, Y_ids, Mask)
-
-    for logit, y_id, t in zip(logits, Y_ids, raw_text):
-        logit = logit.detach().cpu().numpy()
-        true_label = y_id.detach().cpu().numpy()
-
-        pred_label = np.argmax(logit)
-        score = max(logit)
-
-        d_80_score.append({
-            'text': t,
-            'true_label': intent_labels[y_id],
-            'pred_label': intent_labels[pred_label],
-            'score': f'{score:.4f}',
-        })
-json.dump(d_80_score, (Path(data_dir)/'d_80.json').open('w'), ensure_ascii=False, indent=2)
 
 
