@@ -67,17 +67,11 @@ num_labels = len(intent_labels)
 config = AutoConfig.from_pretrained(pretrained_model_name_or_path=model_args.model_path_or_name, num_labels=num_labels)
 model = BertForSequenceClassification.from_pretrained(pretrained_model_name_or_path=model_args.model_path_or_name, config=config, num_labels=num_labels)
 
-# model 3
-# if 'checkpoint' in model_args.model_args_path_or_name:
-#     model = MultiClsV2.load_pretrained(config, model_args.model_path_or_name)
-# else:
-#     model = MultiClsV2.from_pretrained(pretrained_model_name_or_path=model_args.model_path_or_name, config=config)
 
 ###############################################
 # data process
 ###############################################
-train = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / 'data_20_per.json').open())]
-d_80 = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / 'data_80_per.json').open())]
+train = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / 'data_40_per.json').open())]
 dev = [(_['text'], _['label']) for _ in json.load((Path(common_data_path)/'intent_data' / 'dev_data.json').open())]
 
 vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))

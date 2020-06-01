@@ -47,7 +47,7 @@ model.to(training_args.device)
 ###############################################
 # data process
 ###############################################
-d_80 = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / 'data_80_per.json').open())]
+d_80 = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / 'data_60_per.json').open())]
 vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
 
 d_80_loader = DataGenerator(d_80, training_args, data_args, vocabulary, intent_labels)
