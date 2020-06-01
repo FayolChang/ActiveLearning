@@ -41,6 +41,9 @@ model = BertForSequenceClassification(config, num_labels)
 model.load_state_dict(torch.load(Path(data_dir) / 'cls_model.pt', map_location='cuda' if torch.cuda.is_available() else "cpu"))
 
 
+model.to(training_args.device)
+
+
 ###############################################
 # data process
 ###############################################
