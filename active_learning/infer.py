@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 
 from dataclasses import dataclass, field
-from transformers import AutoConfig
+from transformers import AutoConfig, HfArgumentParser
 
 from active_learning.data_generator import DataGenerator
 from active_learning.model import BertForSequenceClassification
@@ -11,15 +11,12 @@ import numpy as np
 
 from active_learning.training_args import TrainingArguments
 from configuration.config import data_dir, intent_labels, roberta_model_path
-from utils.hf_argsparser import HfArgumentParser
 
+from utils.vocab import load_vocab
 
 ###############################################
 # args
 ###############################################
-from utils.vocab import load_vocab
-
-
 @dataclass
 class ModelArguments:
     model_path_or_name: str = field(default=str(roberta_model_path))
