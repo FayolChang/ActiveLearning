@@ -80,6 +80,6 @@ for k, batch in enumerate(d_80_loader):
             'pred_label': intent_labels[pred_label],
             'score': f'{score:.4f}',
         })
-json.dump(d_80_score, (Path(data_dir)/'d_80.json').open('w'), ensure_ascii=False, indent=2)
+json.dump(d_80_score, (Path(data_dir)/'d_60.json').open('w'), ensure_ascii=False, indent=2)
 print('Done')
 
