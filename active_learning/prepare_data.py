@@ -147,7 +147,7 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
     # d_to_add + d_labeled size: 22938
 
 
-select_samples(20, 80, 40, 60)
+# select_samples(20, 80, 40, 60)
 
 
 
