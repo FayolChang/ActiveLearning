@@ -141,10 +141,6 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
     # d_to_add + d_labeled size: 22938
 
 
-# select_40('data_20_per.json', 'd_80_06011144.json', 4, 'data_40_per.json', 'data_60_per.json')
-# select_samples('data_40_per.json', 'd_60_06011626.json', 3, 'data_60_per_l.json', 'data_40_per_u.json')
-# select_samples('data_60_per_l.json', 'd_40_06011749.json', 2, 'data_80_per_l.json', 'data_20_per_u.json')
-select_samples(20,80,40,60)
 
 
 
