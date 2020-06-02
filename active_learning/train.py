@@ -70,7 +70,7 @@ def train_main(p):
     train = [(_['text'], _['label']) for _ in json.load(in_file.open())]
     dev = [(_['text'], _['label']) for _ in json.load((Path(common_data_path)/'intent_data' / 'dev_data.json').open())]
 
-    vocabulary = load_vocab(vocab_file=(Path(bert_model_path) / 'vocab.txt'))
+    vocabulary = load_vocab()
     # vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
 
     train_loader = DataGenerator(train, training_args, data_args, vocabulary, intent_labels, shuffle=True)
