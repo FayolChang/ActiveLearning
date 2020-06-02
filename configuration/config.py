@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 
@@ -36,3 +37,14 @@ ivr_intent_labels = ['保单查询', '保单绑定付款账号修改/解除(扣�
                      '理赔申请资格人', '理赔结论查询/理赔结案通知书索取', '理赔资料快件查询', '理赔资料退回', '理赔进度查询',
                      '社保选项变更', '维修网点咨询', '联系方式变更', '负样本', '退保咨询', '退保结果查询']
 
+###############################################
+# log
+###############################################
+from utils.vocab import load_vocab
+
+logging.basicConfig(format='%(asctime)s - %(levelname)s - %(name)s -   %(message)s',
+                    datefmt='%m/%d/%y %H:%M:%S',
+                    level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+logger.info(f'begin progress ...')
