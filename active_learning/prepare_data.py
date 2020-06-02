@@ -89,7 +89,7 @@ def a_d80():
     print('\n')
 
 
-def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_file):
+def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_file, query_strategy='random'):
     labeled_file = f'labeled_{labeled_file}.json'
     unlabeled_file = f'unlabeled_{unlabeled_file}.json'
     o_labeled_file = f'labeled_{o_labeled_file}.json'
@@ -107,8 +107,12 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
 
     d_unlabeled = sorted(d_unlabeled, key=lambda x: float(x['score']))
 
-    low_samples, d_unlabeled = d_unlabeled[:low_cnt], d_unlabeled[low_cnt:]
-    random_samples = []
+    if query_strategy != 'random':
+        low_samples, d_unlabeled = d_unlabeled[:low_cnt], d_unlabeled[low_cnt:]
+        random_samples = []
+    else:
+        low_samples = []
+        random_samples = random.sample(d_unlabeled, low_cnt)
 
     for _ in random_samples:
         d_unlabeled.remove(_)
@@ -146,7 +150,7 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
     # d_to_add + d_labeled size: 22938
 
 
-# select_samples(20, 80, 40, 60)
+select_samples(20, 80, 40, 60)
 
 
 
