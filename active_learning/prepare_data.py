@@ -90,10 +90,10 @@ def a_d80():
 
 
 def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_file):
-    labeled_file = f'labeled_{labeled_file}'
-    unlabeled_file = f'unlabeled_{unlabeled_file}'
-    o_labeled_file = f'labeled_{o_labeled_file}'
-    o_unlabeled_file = f'unlabeled_{o_unlabeled_file}'
+    labeled_file = f'labeled_{labeled_file}.json'
+    unlabeled_file = f'unlabeled_{unlabeled_file}.json'
+    o_labeled_file = f'labeled_{o_labeled_file}.json'
+    o_unlabeled_file = f'unlabeled_{o_unlabeled_file}.json'
 
     low_cnt, random_cnt = 5400, 340
 
@@ -108,7 +108,6 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
         d_unlabeled.remove(_)
 
     d_to_add = low_samples + random_samples
-    d_as_unlabeled = [_ for _ in d_unlabeled if _ not in d_to_add]
 
     def trans(data):
         for dic in data:
@@ -118,14 +117,14 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
             dic.pop('score')
 
     trans(d_to_add)
-    trans(d_as_unlabeled)
+    trans(d_unlabeled)
 
     json.dump(d_to_add + d_labeled, (Path(data_dir)/o_labeled_file).open('w'), ensure_ascii=False, indent=2)
-    json.dump(d_as_unlabeled, (Path(data_dir)/o_unlabeled_file).open('w'), ensure_ascii=False, indent=2)
+    json.dump(d_unlabeled, (Path(data_dir)/o_unlabeled_file).open('w'), ensure_ascii=False, indent=2)
 
     logger.info(f'input: {labeled_file} - {unlabeled_file}')
     logger.info(f'd_to_add size: {len(d_to_add)}')
-    logger.info(f'd_as_unlabeled size: {len(d_as_unlabeled)}')
+    logger.info(f'd_as_unlabeled size: {len(d_unlabeled)}')
     logger.info(f'd_to_add + d_labeled size: {len(d_to_add) + len(d_labeled)}')
 
     # new_d_20 size: 5740
@@ -144,7 +143,7 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
 # select_40('data_20_per.json', 'd_80_06011144.json', 4, 'data_40_per.json', 'data_60_per.json')
 # select_samples('data_40_per.json', 'd_60_06011626.json', 3, 'data_60_per_l.json', 'data_40_per_u.json')
 # select_samples('data_60_per_l.json', 'd_40_06011749.json', 2, 'data_80_per_l.json', 'data_20_per_u.json')
-
+select_samples(20,80,40,60)
 
 
 
