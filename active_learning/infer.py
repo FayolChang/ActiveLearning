@@ -41,7 +41,7 @@ def infer_main(p):
     num_labels = len(intent_labels)
     config = AutoConfig.from_pretrained(pretrained_model_name_or_path=model_args.model_path_or_name, num_labels=num_labels)
     model = BertForSequenceClassification(config, num_labels)
-    model.load_state_dict(torch.load(Path(data_dir) / 'cls_model.pt', map_location='cuda' if torch.cuda.is_available() else "cpu"))
+    model.load_state_dict(torch.load(Path(data_dir) / f'cls_model_{100-p}.pt', map_location='cuda' if torch.cuda.is_available() else "cpu"))
 
 
     model.to(training_args.device)

@@ -95,7 +95,8 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
     o_labeled_file = f'labeled_{o_labeled_file}.json'
     o_unlabeled_file = f'unlabeled_{o_unlabeled_file}.json'
 
-    low_cnt, random_cnt = 5400, 340
+    # low_cnt, random_cnt = 5400, 340
+    low_cnt, random_cnt = 4000, 1740
 
     d_unlabeled = json.load((Path(data_dir) / unlabeled_file).open())
     d_labeled = json.load((Path(data_dir) / labeled_file).open())

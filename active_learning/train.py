@@ -319,7 +319,7 @@ def train_main(p):
 
             # save #
             model_to_save = model.module if hasattr(model, 'module') else model
-            torch.save(model_to_save.state_dict(), Path(data_dir) / 'cls_model.pt')
+            torch.save(model_to_save.state_dict(), Path(data_dir) / f'cls_model_{p}.pt')
 
             # save #
             json.dump(err, (Path(data_dir) / 'err.json').open('w'), ensure_ascii=False, indent=4)
