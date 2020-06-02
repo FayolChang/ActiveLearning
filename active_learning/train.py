@@ -254,15 +254,15 @@ def train_main(p):
 
                     logger.info(f'epoch: {e} - batch: {step}/{train_loader.steps} - loss: {t_loss / (step + 1): 6f}')
 
-                if global_step % training_args.saving_steps == 0:
-                    output_dir = os.path.join(training_args.output_dir, f'checkpoint-{global_step}')
-
-                    save_model(output_dir, model)
-                    rotate_checkpoints()
-
-                    torch.save(optimizer.state_dict(), Path(output_dir)/'optimizer.pt')
-                    torch.save(scheduler.state_dict(), Path(output_dir)/'scheduler.pt')
-                    logger.info(f'Saving optimizer and scheduler states to {output_dir}')
+                # if global_step % training_args.saving_steps == 0:
+                #     output_dir = os.path.join(training_args.output_dir, f'checkpoint-{global_step}')
+                #
+                #     save_model(output_dir, model)
+                #     rotate_checkpoints()
+                #
+                #     torch.save(optimizer.state_dict(), Path(output_dir)/'optimizer.pt')
+                #     torch.save(scheduler.state_dict(), Path(output_dir)/'scheduler.pt')
+                #     logger.info(f'Saving optimizer and scheduler states to {output_dir}')
 
         model.eval()
         dev_acc = 0
