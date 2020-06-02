@@ -17,7 +17,7 @@ from transformers import AdamW, \
 from active_learning.data_generator import DataGenerator
 from active_learning.model import BertForSequenceClassification
 from active_learning.training_args import TrainingArguments
-from configuration.config import data_dir, roberta_model_path, intent_labels, common_data_path, logger
+from configuration.config import data_dir, roberta_model_path, intent_labels, common_data_path, logger, bert_model_path
 from utils.vocab import load_vocab
 
 
@@ -30,7 +30,8 @@ def train_main(p):
     ###############################################
     @dataclass
     class ModelArguments:
-        model_path_or_name: str = field(default=str(roberta_model_path))
+        model_path_or_name: str = field(default=str(bert_model_path))
+        # model_path_or_name: str = field(default=str(roberta_model_path))
         # model_path_or_name: str = field(default=str(Path(data_dir)/'checkpoints'/'checkpoint-6000'))
 
 
@@ -69,7 +70,8 @@ def train_main(p):
     train = [(_['text'], _['label']) for _ in json.load(in_file.open())]
     dev = [(_['text'], _['label']) for _ in json.load((Path(common_data_path)/'intent_data' / 'dev_data.json').open())]
 
-    vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
+    vocabulary = load_vocab(vocab_file=(Path(bert_model_path) / 'vocab.txt'))
+    # vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
 
     train_loader = DataGenerator(train, training_args, data_args, vocabulary, intent_labels, shuffle=True)
     dev_loader = DataGenerator(dev, training_args, data_args, vocabulary, intent_labels)

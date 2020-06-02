@@ -10,7 +10,7 @@ import torch
 import numpy as np
 
 from active_learning.training_args import TrainingArguments
-from configuration.config import data_dir, intent_labels, roberta_model_path
+from configuration.config import data_dir, intent_labels, roberta_model_path, bert_model_path
 
 from utils.vocab import load_vocab
 
@@ -21,7 +21,8 @@ def infer_main(p):
     ###############################################
     @dataclass
     class ModelArguments:
-        model_path_or_name: str = field(default=str(roberta_model_path))
+        model_path_or_name: str = field(default=str(bert_model_path))
+        # model_path_or_name: str = field(default=str(roberta_model_path))
         # model_path_or_name: str = field(default=str(Path(data_dir)/'checkpoints'/'checkpoint-6000'))
 
 
@@ -50,7 +51,8 @@ def infer_main(p):
     # data process
     ###############################################
     d_80 = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / f'unlabeled_{p}.json').open())]
-    vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
+    vocabulary = load_vocab(vocab_file=(Path(bert_model_path) / 'vocab.txt'))
+    # vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
 
     d_80_loader = DataGenerator(d_80, training_args, data_args, vocabulary, intent_labels)
 
