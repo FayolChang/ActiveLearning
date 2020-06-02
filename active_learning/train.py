@@ -23,7 +23,7 @@ from utils.vocab import load_vocab
 
 def train_main(p):
 
-    in_file = Path(data_dir) / f'labeled_{p}' if isinstance(p, int) else Path(common_data_path) / p
+    in_file = Path(data_dir) / f'labeled_{p}.json' if isinstance(p, int) else Path(common_data_path) / p
 
     ###############################################
     # args
@@ -204,13 +204,13 @@ def train_main(p):
     best_epoch = 0
     model.zero_grad()
     for e in range(epoch_trained, training_args.epoch_num):
-    #for e in range(1):  # debug
+    # for e in range(1):  # debug
         model.train()
         t_loss = 0
         logging_loss = 0
         for step, batch in enumerate(train_loader):
 
-            if step > 0: break  # debug
+            # if step > 0: break  # debug
 
             if step_trained_cur_epoch > 0:
                 step_trained_cur_epoch -= 1
@@ -269,7 +269,7 @@ def train_main(p):
         cat = defaultdict(lambda: 1e-10)
         for k, batch in enumerate(dev_loader):
 
-            if k > 0: break  # debug
+            # if k > 0: break  # debug
 
             raw_text = batch[-1]
             batch = [_.to(training_args.device) for _ in batch[:-1]]
