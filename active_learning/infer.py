@@ -50,7 +50,11 @@ def infer_main(p):
     ###############################################
     # data process
     ###############################################
-    d_80 = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / f'unlabeled_{p}.json').open())]
+    try:
+        d_80 = [(_['text'], _['label']) for _ in json.load((Path(data_dir) / f'unlabeled_{p}.json').open())]
+    except:
+
+        d_80 = [(_['text'], _['true_label']) for _ in json.load((Path(data_dir) / f'unlabeled_{p}.json').open())]
     vocabulary = load_vocab()
     # vocabulary = load_vocab(vocab_file=(Path(roberta_model_path) / 'vocab.txt'))
 
