@@ -95,22 +95,21 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
     o_labeled_file = f'labeled_{o_labeled_file}.json'
     o_unlabeled_file = f'unlabeled_{o_unlabeled_file}.json'
 
-    # low_cnt, random_cnt = 5400, 340
-    # low_cnt, random_cnt = 4000, 1740
+    low_cnt = 5740
 
     d_unlabeled = json.load((Path(data_dir) / unlabeled_file).open())
     d_labeled = json.load((Path(data_dir) / labeled_file).open())
 
-    mid = len(d_unlabeled) // 2
-    span = (len(d_labeled) + len(d_unlabeled)) // 10
-    start = max(0, mid - span)
-    end = mid + span
+    # mid = len(d_unlabeled) // 2
+    # span = (len(d_labeled) + len(d_unlabeled)) // 10
+    # start = max(0, mid - span)
+    # end = mid + span
 
     d_unlabeled = sorted(d_unlabeled, key=lambda x: float(x['score']))
 
-    low_samples, d_unlabeled = d_unlabeled[start: end], d_unlabeled[: start] + d_unlabeled[end:]
-    # random_samples = random.sample(d_unlabeled, random_cnt)
+    low_samples, d_unlabeled = d_unlabeled[:low_cnt], d_unlabeled[low_cnt:]
     random_samples = []
+
     for _ in random_samples:
         d_unlabeled.remove(_)
 
@@ -118,7 +117,7 @@ def select_samples(labeled_file, unlabeled_file, o_labeled_file, o_unlabeled_fil
 
     def trans(data):
         for dic in data:
-            dic['label'] = dic['pred_label']
+            dic['label'] = dic['true_label']
             dic.pop('pred_label')
             dic.pop('true_label')
             dic.pop('score')
