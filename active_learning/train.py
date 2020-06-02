@@ -23,7 +23,7 @@ from utils.vocab import load_vocab
 
 def train_main(p):
 
-    in_file = Path(data_dir) / f'labeled_{p}.json' if isinstance(p, int) else Path(common_data_path) / p
+    in_file = Path(data_dir) / f'labeled_{p}.json' if isinstance(p, int) else Path(common_data_path) /'intent_data'/ p
 
     ###############################################
     # args
