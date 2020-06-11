@@ -52,11 +52,15 @@ class TrainingArguments:
 
     @property
     def n_gpu(self):
-        return self._setup_devices[0]
+        n_gpu = torch.cuda.device_count() if torch.cuda.is_available() else 0
+        return n_gpu
+        # return self._setup_devices[0]
 
     @property
     def device(self):
-        return self._setup_devices[1]
+        device = torch.device('cuda') if torch.cuda.is_available() else torch.device('cpu')
+        return device
+        # return self._setup_devices[1]
 
     def to_json_string(self):
         return json.dumps(dataclasses.asdict(self), indent=2)
