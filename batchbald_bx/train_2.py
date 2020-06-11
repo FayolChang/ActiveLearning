@@ -229,7 +229,7 @@ def train_main(train_loader):
             raw_text = batch[-1]
             batch = [_.to(training_args.device) for _ in batch[:-1]]
             X_ids, Y_ids, Mask = batch
-            if step < 5: logger.info(f'batch_size: {X_ids.size()}')
+            if step < 1: logger.info(f'batch_size: {X_ids.size()[0]}')
             logits = model(X_ids, 1, attention_mask=Mask).squeeze(1)
             loss = loss_func(Y_ids, logits)
 
