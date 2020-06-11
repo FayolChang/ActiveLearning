@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd insurance_bot
+cd ActiveLearning
 export PYTHONPATH="."
 export ROOT_DIR="root"
 
