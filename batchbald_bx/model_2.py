@@ -22,10 +22,17 @@ class BertForSequenceClassification(BertPreTrainedModel, consistent_mc_dropout.B
 
         self.fc2 = nn.Linear(config.hidden_size, num_labels)
 
-    def mc_forward_impl(self, input_ids, **kwargs):
-        _, pooled_output = self.bert(input_ids, kwargs["attention_mask"])
-        pooled_output = self.bert_drop(pooled_output)
-        output = self.fc1(pooled_output)
+    def forward(self, input_ids, k, **kwargs):
+        _, input_B = self.bert(input_ids, kwargs["attention_mask"])
+
+        consistent_mc_dropout.BayesianModule.k = k
+        mc_input_BK = consistent_mc_dropout.BayesianModule.mc_tensor(input_B, k)
+        mc_output_BK = self.mc_forward_impl(mc_input_BK)
+        mc_output_B_K = consistent_mc_dropout.BayesianModule.unflatten_tensor(mc_output_BK, k)
+        return mc_output_B_K
+
+    def mc_forward_impl(self, mc_output_BK):
+        output = self.fc1(mc_output_BK)
         output = self.fc1_drop(output)
         logits = self.fc2(output)
 

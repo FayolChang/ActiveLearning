@@ -25,11 +25,11 @@ class BayesianModule(Module):
         BayesianModule.k = k
 
         mc_input_BK = BayesianModule.mc_tensor(input_B, k)
-        mc_output_BK = self.mc_forward_impl(mc_input_BK, **kwargs)
+        mc_output_BK = self.mc_forward_impl(mc_input_BK)
         mc_output_B_K = BayesianModule.unflatten_tensor(mc_output_BK, k)
         return mc_output_B_K
 
-    def mc_forward_impl(self, mc_input_BK: torch.Tensor, **kwargs):
+    def mc_forward_impl(self, mc_input_BK: torch.Tensor):
         return mc_input_BK
 
     @staticmethod
