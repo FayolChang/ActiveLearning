@@ -205,6 +205,7 @@ def train_main(train_loader):
     # train
     ###############################################
     model.to(training_args.device)
+    logger.info(f'gpu num: {training_args.n_gpu}')
     if training_args.n_gpu > 1:
         model = nn.DataParallel(model)
 
