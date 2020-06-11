@@ -12,7 +12,7 @@ from batchbald_bx.data_generator_2 import DataGenerator
 from batchbald_bx.train_2 import train_main
 from batchbald_redux import active_learning, batchbald
 from batchbald_redux.repeated_mnist import get_targets
-from configuration.config import common_data_path, intent_labels, bert_model_path
+from configuration.config import common_data_path, intent_labels, bert_model_path, logger
 from utils.vocab import load_vocab
 
 
@@ -91,6 +91,7 @@ pbar = tqdm(initial=len(active_learning_data.training_dataset),
 
 
 while True:
+    logger.info(f'training_dataset: {len(active_learning_data.training_dataset)}')
     metric, model = train_main(train_generator)
 
     if len(active_learning_data.training_dataset) >= max_training_samples:
