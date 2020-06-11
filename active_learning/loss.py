@@ -10,8 +10,8 @@ class LabelSmoothLoss(nn.Module):
         self.num_labels = num_labels
         self.dim = dim
 
-    def forward(self, pred, target):
-        pred = pred.log_softmax(dim=self.dim)  # [b,N]
+    def forward(self, target, pred):
+        # pred = pred.log_softmax(dim=self.dim)  # [b,N]
         with torch.no_grad():
             true_dist = torch.zeros_like(pred, device=pred.device)
             true_dist.fill_(self.smoothing / self.num_labels)

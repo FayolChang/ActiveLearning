@@ -6,7 +6,6 @@
 *.csv
 *.json
 *.pt
-*.txt
 data
 data2019
 dict
