@@ -341,11 +341,11 @@ def train_main(train_loader):
             json.dump(err, (Path(data_dir) / 'err.json').open('w'), ensure_ascii=False, indent=4)
 
         logger.info(f'epoch: {e} - dev_acc: {acc:.5f} {dev_acc}/{len(dev_loader)} - best_score: {best_acc:.5f} - best_epoch: {best_epoch} ')
-        for t in intent_labels:
-            logger.info(f'cat: {t} - '
-                        f'precision: {cat[t + "_A"] / cat[t + "_C"]:.5f} - '
-                        f'recall: {cat[t + "_A"] / cat[t + "_B"]:.5f} - '
-                        f'f1: {2 * cat[t + "_A"] / (cat[t + "_B"] + cat[t + "_C"]):.5f}')
+        # for t in intent_labels:
+        #     logger.info(f'cat: {t} - '
+        #                 f'precision: {cat[t + "_A"] / cat[t + "_C"]:.5f} - '
+        #                 f'recall: {cat[t + "_A"] / cat[t + "_B"]:.5f} - '
+        #                 f'f1: {2 * cat[t + "_A"] / (cat[t + "_B"] + cat[t + "_C"]):.5f}')
 
     tb_writer.close()
 
