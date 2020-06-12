@@ -40,7 +40,7 @@ num_initial_samples = 500
 max_training_samples = 5000
 num_inference_samples = 100
 acquisition_batch_size = 5
-num_samples = 100000
+num_samples = 1000000000
 pool_batch_size = 128
 
 
