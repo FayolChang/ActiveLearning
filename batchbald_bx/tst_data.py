@@ -144,9 +144,10 @@ while True:
     dataset_indices = active_learning_data.get_dataset_indices(
         candidate_batch.indices)
 
-    logger.info("Dataset indices: ", dataset_indices)
-    logger.info("Scores: ", candidate_batch.scores)
-    logger.info("Labels: ", targets[candidate_batch.indices])
+    logger.info(f"Dataset indices: {dataset_indices}")
+    logger.info(f"Scores: {candidate_batch.scores}")
+    logger.info(f"Labels: {targets[candidate_batch.indices]}")
+    logger.info(f"Labels name: {[intent_labels[idx] for idx in targets[candidate_batch.indices].detach().cpu().numpy()]}")
     logger.info('Metric: ')
     logger(metric)
 
