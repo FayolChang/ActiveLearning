@@ -1,6 +1,6 @@
 #!/bin/sh
 
-cd /root/ActiveLearning
+cd /root/workspace/ActiveLearning
 export PYTHONPATH="."
 export ROOT_DIR="root"
 

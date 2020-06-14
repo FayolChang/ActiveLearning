@@ -65,7 +65,7 @@ max_training_samples = 150
 acquisition_batch_size = 5
 num_inference_samples = 100
 num_test_inference_samples = 5
-num_samples = 100000
+num_samples = 10000
 
 test_batch_size = 512
 batch_size = 64
