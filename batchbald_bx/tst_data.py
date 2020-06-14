@@ -149,7 +149,7 @@ while True:
     logger.info(f"Labels: {targets[candidate_batch.indices]}")
     logger.info(f"Labels name: {[intent_labels[idx] for idx in targets[candidate_batch.indices].detach().cpu().numpy()]}")
     logger.info('Metric: ')
-    logger(metric)
+    logger.info(metric)
 
     active_learning_data.acquire(candidate_batch.indices)
     added_indices.append(dataset_indices)
