@@ -22,7 +22,7 @@ class TrainingArguments:
     weight_decay: float = field(default=0.0, metadata={'help': 'weight_decay'})
 
     epoch_num: int = field(default=5, metadata={'help': 'epoch number'})
-    per_gpu_batch_size: int = field(default=16, metadata={'help': 'batch size per gpu'})
+    per_gpu_batch_size: int = field(default=8, metadata={'help': 'batch size per gpu'})
 
     seed: int = field(default=32, metadata={'help': 'seed'})
 
