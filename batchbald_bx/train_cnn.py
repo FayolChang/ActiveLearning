@@ -303,7 +303,7 @@ def train_main(train_loader):
                 cat[f'{intent_labels[true_label]}_A'] += int(pred_label == true_label)
                 cat[f'{intent_labels[true_label]}_B'] += 1
                 cat[f'{intent_labels[pred_label]}_C'] += 1
-        acc = dev_acc / len(dev_loader)
+        acc = dev_acc / (len(dev_loader)*training_args.batch_size)
 
         eval_logs = {
             'eval_acc': acc,
@@ -328,7 +328,8 @@ def train_main(train_loader):
             # save #
             json.dump(err, (Path(data_dir) / 'err.json').open('w'), ensure_ascii=False, indent=4)
 
-        logger.info(f'epoch: {e} - dev_acc: {acc:.5f} {dev_acc}/{len(dev_loader)} - best_score: {best_acc:.5f} - best_epoch: {best_epoch} ')
+        logger.info(f'epoch: {e} - dev_acc: {acc:.5f} {dev_acc}/{len(dev_loader)*training_args.batch_size} - '
+                    f'best_score: {best_acc:.5f} - best_epoch: {best_epoch} ')
         # for t in intent_labels:
         #     logger.info(f'cat: {t} - '
         #                 f'precision: {cat[t + "_A"] / cat[t + "_C"]:.5f} - '

@@ -84,7 +84,7 @@ class ExactJointEntropy(JointEntropy):
         pbar = tqdm(total=B, desc="ExactJointEntropy.compute_batch", leave=False)
 
         @toma.execute.chunked(probs_B_K_C,
-                              initial_step=512,
+                              initial_step=128,
                               dimension=0)
         def chunked_joint_entropy(chunked_probs_b_K_C: torch.Tensor,
                                   start: int, end: int):
