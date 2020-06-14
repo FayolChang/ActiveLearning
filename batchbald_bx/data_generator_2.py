@@ -68,7 +68,7 @@ class DataGeneratorW2V(object):
         self.steps = len(data) // batch_size
 
     def __len__(self):
-        return len(self.data)
+        return len(self.steps)
 
     def __iter__(self):
         # if self.shuffle:
