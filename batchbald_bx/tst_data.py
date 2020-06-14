@@ -144,11 +144,11 @@ while True:
     dataset_indices = active_learning_data.get_dataset_indices(
         candidate_batch.indices)
 
-    print("Dataset indices: ", dataset_indices)
-    print("Scores: ", candidate_batch.scores)
-    print("Labels: ", targets[candidate_batch.indices])
-    print('Metric: ')
-    print(metric)
+    logger.info("Dataset indices: ", dataset_indices)
+    logger.info("Scores: ", candidate_batch.scores)
+    logger.info("Labels: ", targets[candidate_batch.indices])
+    logger.info('Metric: ')
+    logger(metric)
 
     active_learning_data.acquire(candidate_batch.indices)
     added_indices.append(dataset_indices)
