@@ -33,7 +33,7 @@ model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
 train_file = Path(common_data_path) / 'intent_data' / 'train_data.json'
 num_classes = len(intent_labels)
-num_initial_samples = 2000
+num_initial_samples = 500
 max_training_samples = 5000
 num_inference_samples = 100
 acquisition_batch_size = 3

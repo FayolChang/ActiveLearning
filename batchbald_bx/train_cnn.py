@@ -1,4 +1,5 @@
 import json
+import math
 from collections import defaultdict
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from transformers import HfArgumentParser
 
 from active_learning.loss import LabelSmoothLoss
 from batchbald_bx.data_generator_2 import DataGeneratorW2V
-from batchbald_bx.model_2 import TextCNN
+from batchbald_bx.model_2 import TextCNN, TextCnnMC
 from batchbald_bx.training_args_2 import TrainingArguments
 from configuration.config import data_dir, intent_labels, common_data_path, logger, bert_model_path
 
@@ -52,7 +53,7 @@ def train_main(train_loader, vocabulary, id2embeddings):
     id2embeddings = torch.tensor(id2embeddings, dtype=torch.float).to(training_args.device)
 
     num_labels = len(intent_labels)
-    model = TextCNN(id2embeddings, num_labels)
+    model = TextCnnMC(id2embeddings, num_labels)
 
 
     ###############################################
@@ -93,7 +94,7 @@ def train_main(train_loader, vocabulary, id2embeddings):
             batch = [_.to(training_args.device) for _ in batch[:-1]]
             X_ids, Y_ids = batch
             if step < 1: logger.info(f'batch_size: {X_ids.size()[0]}')
-            logits = model(X_ids)
+            logits = model(X_ids, 1).squeeze(1)
             loss = loss_func(Y_ids, logits)
 
             if training_args.n_gpu > 1:
@@ -112,8 +113,8 @@ def train_main(train_loader, vocabulary, id2embeddings):
 
                 global_step += 1
 
-                if global_step % training_args.logging_steps == 0:
-                    logger.info(f'epoch: {e} - batch: {step}/{train_loader.steps} - loss: {t_loss / (step + 1): 6f}')
+                # if global_step % training_args.logging_steps == 0:
+            logger.info(f'epoch: {e} - batch: {step}/{train_loader.steps} - loss: {t_loss / (step + 1): 6f}')
 
         model.eval()
         dev_acc = 0
@@ -128,7 +129,8 @@ def train_main(train_loader, vocabulary, id2embeddings):
             batch = [_.to(training_args.device) for _ in batch[:-1]]
             X_ids, Y_ids = batch
             with torch.no_grad():
-                logits = model(X_ids)
+                logits = model(X_ids, 10).squeeze(1)
+                logits = torch.logsumexp(logits, dim=1) - math.log(10)
                 loss = loss_func(Y_ids, logits)
 
                 if training_args.n_gpu > 1:
