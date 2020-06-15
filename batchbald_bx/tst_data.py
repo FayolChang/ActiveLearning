@@ -98,7 +98,7 @@ pbar = tqdm(initial=len(active_learning_data.training_dataset),
             total=max_training_samples,
             desc="Training Set Size")
 
-
+record = []
 while True:
     if model_type == 'bert':
         metric, model = train_2.train_main(train_generator)
@@ -153,3 +153,14 @@ while True:
     added_indices.append(dataset_indices)
     pbar.update(len(dataset_indices))
 
+    record.append({
+        'added indices': dataset_indices,
+        'scores': '_'.join(map(lambda x: f'{x:.5f}', candidate_batch.scores)),
+        'labels': targets[candidate_batch.indices],
+        'label_names': [intent_labels[idx] for idx in targets[candidate_batch.indices].detach().cpu().numpy()],
+        'eval_acc': f'{metric["acc"]:.4f}',
+        'train_data_size': len(active_learning_data.training_dataset)
+
+    })
+
+json.dump(record, Path('/root/workspace/ActiveLearning/record.json').open('w'), ensure_ascii=False, indent=2)
