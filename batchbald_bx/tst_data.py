@@ -8,15 +8,9 @@ from tqdm import tqdm
 from transformers import HfArgumentParser
 
 from active_learning.training_args import TrainingArguments
+from batchbald_bx import data_generator_2, train_2, train_cnn
 from utils.vocab import load_vocab_w2v, load_vocab
 
-model_type = 'cnn'
-if model_type == 'bert':
-    from batchbald_bx.data_generator_2 import DataGenerator
-    from batchbald_bx.train_2 import train_main
-else:
-    from batchbald_bx.train_cnn import train_main
-    from batchbald_bx.data_generator_2 import DataGeneratorW2V
 
 from batchbald_redux import active_learning, batchbald
 from batchbald_redux.repeated_mnist import get_targets
@@ -45,10 +39,12 @@ train_file = Path(common_data_path) / 'intent_data' / 'train_data.json'
 num_classes = len(intent_labels)
 num_initial_samples = 500
 max_training_samples = 5000
-num_inference_samples = 100
-acquisition_batch_size = 3
-num_samples = 1000000
+num_inference_samples = 10
+acquisition_batch_size = 5
+num_samples = 100000000
 pool_batch_size = 128
+
+model_type = 'cnn'
 
 
 class IntentDataset(Dataset):
@@ -86,13 +82,13 @@ active_learning_data.acquire(initial_samples)
 # build train generator
 if model_type == 'bert':
     vocabulary = load_vocab()
-    train_generator = DataGenerator(active_learning_data.training_dataset, training_args.batch_size, data_args, vocabulary, intent_labels, shuffle=True)
-    pool_generator = DataGenerator(active_learning_data.pool_dataset, pool_batch_size, data_args, vocabulary, intent_labels, shuffle=True)
+    train_generator = data_generator_2.DataGenerator(active_learning_data.training_dataset, training_args.batch_size, data_args, vocabulary, intent_labels, shuffle=True)
+    pool_generator = data_generator_2.DataGenerator(active_learning_data.pool_dataset, pool_batch_size, data_args, vocabulary, intent_labels)
 
 else:
-    vocabulary, _ = load_vocab_w2v()
-    train_generator = DataGeneratorW2V(active_learning_data.training_dataset, training_args.batch_size, data_args, vocabulary, intent_labels, shuffle=True)
-    pool_generator = DataGeneratorW2V(active_learning_data.pool_dataset, pool_batch_size, data_args, vocabulary, intent_labels, shuffle=True)
+    vocabulary, id2embeddings = load_vocab_w2v()
+    train_generator = data_generator_2.DataGeneratorW2V(active_learning_data.training_dataset, training_args.batch_size, data_args, vocabulary, intent_labels, shuffle=True)
+    pool_generator = data_generator_2.DataGeneratorW2V(active_learning_data.pool_dataset, pool_batch_size, data_args, vocabulary, intent_labels)
 
 use_cuda = torch.cuda.is_available()
 
@@ -104,7 +100,10 @@ pbar = tqdm(initial=len(active_learning_data.training_dataset),
 
 
 while True:
-    metric, model = train_main(train_generator)
+    if model_type == 'bert':
+        metric, model = train_2.train_main(train_generator)
+    else:
+        metric, model = train_cnn.train_main(train_generator, vocabulary, id2embeddings)
 
     if len(active_learning_data.training_dataset) >= max_training_samples:
         break
