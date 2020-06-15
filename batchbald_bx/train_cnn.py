@@ -99,7 +99,7 @@ def train_main(train_loader, vocabulary, id2embeddings):
             batch = [_.to(training_args.device) for _ in batch[:-1]]
             X_ids, Y_ids = batch
             if step < 1: logger.info(f'batch_size: {X_ids.size()[0]}')
-            logits = model(X_ids, 1).squeeze(1)
+            logits = model(X_ids)
             loss = loss_func(Y_ids, logits)
 
             if training_args.n_gpu > 1:
@@ -134,7 +134,7 @@ def train_main(train_loader, vocabulary, id2embeddings):
             batch = [_.to(training_args.device) for _ in batch[:-1]]
             X_ids, Y_ids = batch
             with torch.no_grad():
-                logits = model(X_ids, 1).squeeze(1)
+                logits = model(X_ids)
                 loss = loss_func(Y_ids, logits)
 
                 if training_args.n_gpu > 1:
