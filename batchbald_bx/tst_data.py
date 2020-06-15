@@ -49,7 +49,7 @@ model_type = 'cnn'
 
 class IntentDataset(Dataset):
     def __init__(self, file_name):
-        self.data, self.targets = zip(*[(_['text'], _['label']) for _ in json.load(file_name.open())])
+        self.data, self.targets = zip(*[(_['text'], _['label']) for _ in json.load(file_name.open()) if _['label']!='负样本'])
         self._label2id()
 
     def __len__(self):
