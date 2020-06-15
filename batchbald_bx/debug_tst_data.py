@@ -33,7 +33,7 @@ model_args, data_args, training_args = parser.parse_args_into_dataclasses()
 
 train_file = Path(common_data_path) / 'intent_data' / 'train_data.json'
 num_classes = len(intent_labels)
-num_initial_samples = 28000
+num_initial_samples = 2000
 max_training_samples = 5000
 num_inference_samples = 100
 acquisition_batch_size = 3
@@ -79,13 +79,13 @@ active_learning_data.acquire(initial_samples)
 if model_type == 'bert':
     vocabulary = load_vocab()
     train_generator = data_generator_2.DataGenerator(active_learning_data.training_dataset, training_args.batch_size, data_args, vocabulary, intent_labels, shuffle=True)
-    pool_generator = data_generator_2.DataGenerator(active_learning_data.pool_dataset, pool_batch_size, data_args, vocabulary, intent_labels, shuffle=True)
+    pool_generator = data_generator_2.DataGenerator(active_learning_data.pool_dataset, pool_batch_size, data_args, vocabulary, intent_labels)
     train_2.train_main(train_generator)
 
 else:
     vocabulary, id2embeddings = load_vocab_w2v()
     train_generator = data_generator_2.DataGeneratorW2V(active_learning_data.training_dataset, training_args.batch_size, data_args, vocabulary, intent_labels, shuffle=True)
-    pool_generator = data_generator_2.DataGeneratorW2V(active_learning_data.pool_dataset, pool_batch_size, data_args, vocabulary, intent_labels, shuffle=True)
+    pool_generator = data_generator_2.DataGeneratorW2V(active_learning_data.pool_dataset, pool_batch_size, data_args, vocabulary, intent_labels)
     train_cnn.train_main(train_generator, vocabulary, id2embeddings)
 
 

@@ -1,7 +1,4 @@
 import json
-import os
-import re
-import shutil
 from collections import defaultdict
 from pathlib import Path
 
@@ -9,14 +6,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 from dataclasses import dataclass, field
-from torch.utils.tensorboard import SummaryWriter
-from transformers import AdamW, \
-    get_linear_schedule_with_warmup, HfArgumentParser
+from transformers import HfArgumentParser
 
 from active_learning.loss import LabelSmoothLoss
-from active_learning.training_args import TrainingArguments
 from batchbald_bx.data_generator_2 import DataGeneratorW2V
 from batchbald_bx.model_2 import TextCNN
+from batchbald_bx.training_args_2 import TrainingArguments
 from configuration.config import data_dir, intent_labels, common_data_path, logger, bert_model_path
 
 
@@ -34,7 +29,6 @@ def train_main(train_loader, vocabulary, id2embeddings):
     @dataclass
     class DataTrainingArguments:
         max_seq_length: int = field(default=200)
-
 
     parser = HfArgumentParser((ModelArguments, DataTrainingArguments, TrainingArguments))
     model_args, data_args, training_args = parser.parse_args_into_dataclasses()
