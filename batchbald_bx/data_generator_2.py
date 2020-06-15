@@ -71,11 +71,13 @@ class DataGeneratorW2V(object):
         return self.steps
 
     def __iter__(self):
+        idxs = list(range(len(self.data)))
         if self.shuffle:
-            np.random.shuffle(self.data)
+            np.random.shuffle(idxs)
 
         X, Y, T = [], [], []
-        for i, (text, label_id) in enumerate(self.data):
+        for i, idx in enumerate(idxs):
+            text, label_id = self.data[idx]
 
             text_ids = [self.vocabulary.get(c, self.vocabulary.get('unk'))
                                                          for c in text[:self.data_args.max_seq_length]]
