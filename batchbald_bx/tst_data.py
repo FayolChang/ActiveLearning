@@ -40,7 +40,7 @@ num_classes = len(intent_labels)
 num_initial_samples = 500
 max_training_samples = 5000
 num_inference_samples = 10
-acquisition_batch_size = 5
+acquisition_batch_size = 4
 num_samples = 100000000
 pool_batch_size = 128
 
