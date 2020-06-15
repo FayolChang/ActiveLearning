@@ -11,11 +11,17 @@ class LabelSmoothLoss(nn.Module):
         self.dim = dim
 
     def forward(self, target, pred):
+        """
+
+        :param target: [b]
+        :param pred: [b, N]  log_softmax
+        :return:
+        """
         # pred = pred.log_softmax(dim=self.dim)  # [b,N]
         with torch.no_grad():
             true_dist = torch.zeros_like(pred, device=pred.device)
             true_dist.fill_(self.smoothing / self.num_labels)
-            true_dist.scatter_(1, target.data.unsqueeze(1), self.confidence)
+            true_dist.scatter_(dim=1, index=target.data.unsqueeze(1), value=self.confidence)
         return torch.mean(torch.sum(-true_dist * pred, dim=self.dim))
 
 

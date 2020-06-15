@@ -14,7 +14,7 @@ from utils.file_utils import cache_property
 class TrainingArguments:
     output_dir: str = field(default=str(Path(data_dir)/'outputs'), metadata={'help': 'output dir'})
 
-    gradient_accumulation_steps: int = field(default=4, metadata={'help': 'gradient accumulation steps'})
+    gradient_accumulation_steps: int = field(default=1, metadata={'help': 'gradient accumulation steps'})
     max_gradient_norm: float = field(default=1.0, metadata={'help': 'max gradient norm'})
 
     learning_rate: float = field(default=5e-5, metadata={'help': 'learning rate'})
@@ -22,7 +22,7 @@ class TrainingArguments:
     weight_decay: float = field(default=0.0, metadata={'help': 'weight_decay'})
 
     epoch_num: int = field(default=5, metadata={'help': 'epoch number'})
-    per_gpu_batch_size: int = field(default=8, metadata={'help': 'batch size per gpu'})
+    per_gpu_batch_size: int = field(default=16, metadata={'help': 'batch size per gpu'})
 
     seed: int = field(default=32, metadata={'help': 'seed'})
 

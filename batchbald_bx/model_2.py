@@ -41,31 +41,31 @@ class BertForSequenceClassification(BertPreTrainedModel, consistent_mc_dropout.B
         return logits
 
 
-class textcnn(consistent_mc_dropout.BayesianModule):
+class TextCNN(nn.Module):
     def __init__(self, embeddings, num_labels):
-        super(textcnn, self).__init__()
+        super(TextCNN, self).__init__()
         self.char_embedding = nn.Embedding.from_pretrained(embeddings, freeze=True)
-        self.conv = nn.ModuleList(
+        self.convs = nn.ModuleList(
             [nn.Conv2d(in_channels=1, out_channels=150, kernel_size=(k, 150), padding=(k - 1, 0)) for k in [2, 3, 4]]
         )
-        self.conv_drop = nn.ModuleList(
-            [consistent_mc_dropout.ConsistentMCDropout2d() for _ in range(3)]
-        )
+        # self.conv_drop = nn.ModuleList(
+        #     [consistent_mc_dropout.ConsistentMCDropout2d(p=0.0) for _ in range(3)]
+        # )
 
         self.fc1 = nn.Linear(450, 150)
-        self.fc1_drop = consistent_mc_dropout.ConsistentMCDropout()
+        # self.fc1_drop = consistent_mc_dropout.ConsistentMCDropout(p=0.0)
 
         self.fc2 = nn.Linear(150, num_labels)
 
-    def mc_forward_impl(self, input: torch.Tensor):
+    def forward(self, input: torch.Tensor):
         x_emb = self.char_embedding(input)
 
-        xs = [F.relu(conv_drop(conv(x_emb.unsqueeze(1)))).squeeze(3) for conv, conv_drop in zip(self.conv, self.conv_drop)]
-        xm = [F.max_pool1d(x, kernel_size=x.size(2)).squeeze(2) for x in xs]
+        xs = [F.relu(conv(x_emb.unsqueeze(1))).squeeze(3) for conv in self.convs]
+        xm = [torch.max_pool1d(x, kernel_size=x.size(2)).squeeze(2) for x in xs]
         xc = torch.cat(xm, 1)  # [b,450]
 
         output = self.fc1(xc)
-        output = self.fc1_drop(output)
+        # output = self.fc1_drop(output)
         logits = self.fc2(output)
 
         logits = F.log_softmax(logits, dim=-1)

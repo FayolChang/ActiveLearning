@@ -104,7 +104,6 @@ pbar = tqdm(initial=len(active_learning_data.training_dataset),
 
 
 while True:
-    logger.info(f'training_dataset: {len(active_learning_data.training_dataset)}')
     metric, model = train_main(train_generator)
 
     if len(active_learning_data.training_dataset) >= max_training_samples:
