@@ -71,8 +71,8 @@ class DataGeneratorW2V(object):
         return self.steps
 
     def __iter__(self):
-        # if self.shuffle:
-        #     np.random.shuffle(self.data)
+        if self.shuffle:
+            np.random.shuffle(self.data)
 
         X, Y, T = [], [], []
         for i, (text, label_id) in enumerate(self.data):
