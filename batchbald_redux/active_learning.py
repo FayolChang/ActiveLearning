@@ -96,8 +96,8 @@ def get_balanced_sample_indices(target_classes: List, num_classes, n_per_digit=2
         index, target = permed_index, int(target_classes[permed_index])
 
         num_target_samples = num_samples_by_class[target]
-        # if num_target_samples == n_per_digit:
-        #     continue
+        if num_target_samples == n_per_digit:
+            continue
 
         initial_samples.append(index)
         num_samples_by_class[target] += 1
