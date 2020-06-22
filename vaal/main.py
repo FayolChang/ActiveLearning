@@ -33,6 +33,7 @@ class DataTrainingArguments:
 parser = HfArgumentParser((DataTrainingArguments, TrainingArguments))
 data_args, training_args = parser.parse_args_into_dataclasses()
 
+logger.info(f'n_gpu: {training_args.n_gpu}')
 
 #######################################
 # data prepare

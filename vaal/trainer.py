@@ -68,7 +68,7 @@ def train(train_generator, dev_generator, pool_generator, task_model, vae, discr
             recon, mu, logvar, z = vae(X_ids)
             vae_loss, mse_loss_value, kld_loss_value = vae_loss_func(V_ids, recon, mu, logvar, beta)
 
-            logger.info(f'vae loss: {vae_loss}')
+            if idx < 1: logger.info(f'vae loss: {vae_loss}')
 
             if isinstance(vae_loss, List) and n_gpu > 0:
                 vae_loss = vae_loss.mean()
@@ -87,7 +87,7 @@ def train(train_generator, dev_generator, pool_generator, task_model, vae, discr
 
             dsc_loss_in_vae = bce_loss(labeled_pred, labeled_real_target) + bce_loss(unlabeled_pred, unlabeled_real_target)
 
-            logger.info(f'dsc_loss_in_vae: {dsc_loss_in_vae}')
+            if idx<1: logger.info(f'dsc_loss_in_vae: {dsc_loss_in_vae}')
 
             total_loss = vae_loss + un_vae_loss + dsc_loss_in_vae
 
@@ -112,7 +112,7 @@ def train(train_generator, dev_generator, pool_generator, task_model, vae, discr
             unlabeled_fake_target = torch.zeros(un_X_ids.size()[0], device=device)
 
             dsc_loss = bce_loss(labeled_pred, labeled_real_target)+ bce_loss(unlabeled_pred, unlabeled_fake_target)
-            logger.info(f'dsc_loss: {dsc_loss}')
+            if idx<1: logger.info(f'dsc_loss: {dsc_loss}')
 
             discriminator.zero_grad()
             dsc_loss.backward()
