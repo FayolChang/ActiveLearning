@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 
 import torch
+import torch.nn as nn
 from dataclasses import field, dataclass
 from torch.utils import data
 from transformers import HfArgumentParser, AutoConfig
@@ -107,6 +108,11 @@ discriminator = Discriminator(z_dim=256)
 task_model.to(training_args.device)
 vae.to(training_args.device)
 discriminator.to(training_args.device)
+
+if training_args.n_gpu > 0:
+    task_model = nn.DataParallel(task_model)
+    vae = nn.DataParallel(vae)
+    discriminator = nn.DataParallel(discriminator)
 
 
 while True:
