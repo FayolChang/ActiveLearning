@@ -41,8 +41,10 @@ class TextCNN(nn.Module):
 
         self.fc2 = nn.Linear(150, num_labels)
 
-    def forward(self, input: torch.Tensor):
-        x_emb = self.char_embedding(input)
+        self.label_smooth_loss = LabelSmoothLoss(num_labels)
+
+    def forward(self, X_ids, Y_ids):
+        x_emb = self.char_embedding(X_ids)
 
         xs = [torch.relu(conv(x_emb.unsqueeze(1))).squeeze(3) for conv in self.convs]
         xm = [torch.max_pool1d(x, kernel_size=x.size(2)).squeeze(2) for x in xs]
@@ -53,7 +55,9 @@ class TextCNN(nn.Module):
 
         logits = torch.log_softmax(logits, dim=-1)
 
-        return logits
+        loss = self.label_smooth_loss(Y_ids, logits)
+
+        return logits, loss
 
 
 

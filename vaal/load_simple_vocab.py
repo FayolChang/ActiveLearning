@@ -8,7 +8,7 @@ from configuration.config import bert_vocab_path, data_dir
 
 def load_vocab(vocab_file=bert_vocab_path, remove_sign=False):
     if remove_sign:
-        tmp_vocab = json.load((Path(data_dir) / 'tmp_vocab.json').open())
+        tmp_vocab = json.load((Path(data_dir) / 'tmp_vocab_0622.json').open())
 
     vocab = collections.OrderedDict()
     index = 0
@@ -18,11 +18,7 @@ def load_vocab(vocab_file=bert_vocab_path, remove_sign=False):
             if not token:
                 break
             token = token.strip()
-            if remove_sign and ((token not in tmp_vocab or
-                                 token.startswith('#') or
-                                 'unused' in token or
-                                 not re.search(r'[\u4e00-\u9fa5]', token))
-                                and token != '[UNK]'):
+            if remove_sign and (token not in tmp_vocab and token != '[UNK]'):
                 continue
             vocab[token] = index
             index += 1

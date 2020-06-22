@@ -126,16 +126,16 @@ while True:
     logger.info(f'dev acc: {metric}')
 
     # sample
-    candidate_indices = sampler.sample(vae, discriminator, pool_generator, budget, training_args)
-    data_indices = active_learning_data.get_pool_indices(candidate_indices)
-    targets = get_targets(active_learning_data.pool_data)
-    candidate_targets = targets[data_indices].detach().cpu().numpy()
-    candidate_targets_names = [intent_labels[_] for _ in candidate_targets]
-
-    logger.info(f'acquired label distribution: ')
-    logger.info(collections.Counter(candidate_targets_names).most_common())
-
-    active_learning_data.acquire(candidate_indices)
+    # candidate_indices = sampler.sample(vae, discriminator, pool_generator, budget, training_args)
+    # data_indices = active_learning_data.get_pool_indices(candidate_indices)
+    # targets = get_targets(active_learning_data.pool_data)
+    # candidate_targets = targets[data_indices].detach().cpu().numpy()
+    # candidate_targets_names = [intent_labels[_] for _ in candidate_targets]
+    #
+    # logger.info(f'acquired label distribution: ')
+    # logger.info(collections.Counter(candidate_targets_names).most_common())
+    #
+    # active_learning_data.acquire(candidate_indices)
 
 
 
