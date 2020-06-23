@@ -1,12 +1,11 @@
 import collections
 import json
-import re
 from pathlib import Path
 
 from configuration.config import bert_vocab_path, data_dir
 
 
-def load_vocab(vocab_file=bert_vocab_path, remove_sign=False):
+def load_simple_vocab(vocab_file=bert_vocab_path, remove_sign=True):
     if remove_sign:
         tmp_vocab = json.load((Path(data_dir) / 'tmp_vocab_0622.json').open())
 
@@ -18,7 +17,7 @@ def load_vocab(vocab_file=bert_vocab_path, remove_sign=False):
             if not token:
                 break
             token = token.strip()
-            if remove_sign and (token not in tmp_vocab and token != '[UNK]'):
+            if remove_sign and (token not in tmp_vocab and token not in ['[UNK]', '[PAD]', '[CLS]', '[SEP]', '[MASK]']):
                 continue
             vocab[token] = index
             index += 1

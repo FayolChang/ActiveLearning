@@ -15,22 +15,22 @@ def kaiming_init(m):
 
 
 class VAE(BertPreTrainedModel):
-    def __init__(self, config, z_dim, vocab_size):
+    def __init__(self, config, vocab_lm_size, args):
         super(VAE, self).__init__(config)
         # encoder
         self.bert = BertModel(config)
-        self.enc_linear = nn.Linear(768, 768)
-        self.batch_norm = nn.BatchNorm1d(768)
+        self.enc_linear = nn.Linear(768, 1024)
+        self.batch_norm = nn.BatchNorm1d(1024)
 
-        self.fc_mu = nn.Linear(768, z_dim)
-        self.fc_logvar = nn.Linear(768, z_dim)
+        self.fc_mu = nn.Linear(1024, args.z_dim)
+        self.fc_logvar = nn.Linear(1024, args.z_dim)
 
         # decoder
-        self.dec_linear_l1 = nn.Linear(z_dim, 768)
+        self.dec_linear_l1 = nn.Linear(args.z_dim, args.rec_max_length*768)
         self.dec_batch_norm1 = nn.BatchNorm1d(768)
         self.dec_linear_l2 = nn.Linear(768, 768)
         self.dec_batch_norm2 = nn.BatchNorm1d(768)
-        self.dec_linear_l3 = nn.Linear(768, vocab_size)
+        self.dec_linear_l3 = nn.Linear(768, vocab_lm_size)
 
         self.weight_init()
 
@@ -42,25 +42,30 @@ class VAE(BertPreTrainedModel):
             except:
                 kaiming_init(block)
 
-    def forward(self, X_ids):
-        _, x_enc = self.bert(X_ids)  # b,h
+    def forward(self, X_ids, att_mask):
+        b, s = X_ids.size()
+
+        # encode
+        x_seq_enc, x_enc = self.bert(X_ids, attention_mask=att_mask)  # b,h
         x_enc = self.enc_linear(x_enc)
-        x_enc = torch.relu(x_enc)
         x_enc = self.batch_norm(x_enc)
         z = torch.relu(x_enc)
 
+        # latent space
         mu, logvar = self.fc_mu(z), self.fc_logvar(z)
         z = self.reparameterize(mu, logvar)
 
-        x_dec = self.dec_linear_l1(z)
-        x_dec = self.dec_batch_norm1(x_dec)
+        # decode
+        x_dec = self.dec_linear_l1(z)  # [b,s*768]
+        x_dec = x_dec.view((b,s,768)).contiguous()
+        x_dec = self.dec_batch_norm1(x_dec.transpose(1,2)).transpose(1,2)
         x_dec = torch.relu(x_dec)
-        x_dec = self.dec_linear_l2(x_dec)
-        x_dec = self.dec_batch_norm2(x_dec)
+        x_dec = self.dec_linear_l2(x_dec)  # [b,s,768]
+        x_dec = self.dec_batch_norm2(x_dec.transpose(1,2)).transpose(1,2)
         x_dec = torch.relu(x_dec)
 
-        logits = self.dec_linear_l3(x_dec)
-        logits = torch.softmax(logits, dim=-1)
+        logits = self.dec_linear_l3(x_dec)  # [b,s,2608]
+        # logits = torch.softmax(logits, dim=-1)
 
         return logits, mu, logvar, z
 

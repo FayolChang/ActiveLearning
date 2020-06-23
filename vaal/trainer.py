@@ -9,10 +9,22 @@ CHECK_DEGUG = False
 
 mse_loss = nn.MSELoss()
 bce_loss = nn.BCELoss()
+ce_loss = nn.CrossEntropyLoss()
 
 
-def vae_loss_func(x, recon, mu, logvar, beta):
-    MSE = mse_loss(recon, x)
+def mse_loss_w_mask(preds, targets, mask):
+    # mask: [b,60]
+    _, _, v_size = preds.size()
+    targets = torch.nn.functional.one_hot(targets, v_size)  # [b,s,v]
+    loss = mse_loss(preds.view(-1, v_size), targets.view(-1, v_size))
+    loss = torch.masked_fill(loss, (1-mask).bytes(), 0)
+    loss = torch.sum(loss) / torch.sum(mask)
+
+    return loss
+
+
+def vae_loss_func(x, recon, mu, logvar, beta, mask):
+    MSE = ce_loss(recon.view((-1,recon.size()[-1])), x.view((-1,)))
     KLD = -0.5 * torch.sum(1 + logvar - mu.pow(2) - logvar.exp())
     KLD = KLD * beta
     return MSE + KLD, MSE, KLD
@@ -20,7 +32,6 @@ def vae_loss_func(x, recon, mu, logvar, beta):
 
 def train(train_generator, dev_generator, pool_generator, task_model, vae, discriminator, args):
     num_epoch = args.epoch_num
-    batch_size = args.batch_size
     device = args.device
     n_gpu = args.n_gpu
     beta = args.beta
@@ -47,86 +58,77 @@ def train(train_generator, dev_generator, pool_generator, task_model, vae, discr
             raw_text = labeled_batch[-1]
             labeled_batch = [_.to(device) for _ in labeled_batch[:-1]]
 
-            X_ids, Y_ids, V_ids = labeled_batch
+            X_ids, Y_ids, V_ids, Mask = labeled_batch
 
             ####################
             # task model step
             ####################
             preds, task_loss = task_model(X_ids, Y_ids)
-            if idx < 1: logger.info(f'task loss: {task_loss}')
             if n_gpu > 0:
                 task_loss = task_loss.mean()
             task_loss.backward()
             optim_task.step()
             task_model.zero_grad()
 
-            # #############
-            # # vae step
-            # #############
-            # recon, mu, logvar, z = vae(X_ids)
-            # vae_loss, mse_loss_value, kld_loss_value = vae_loss_func(V_ids, recon, mu, logvar, beta)
-            #
-            # if idx < 1: logger.info(f'vae loss: {vae_loss}')
-            #
-            # if isinstance(vae_loss, List) and n_gpu > 0:
-            #     vae_loss = vae_loss.mean()
-            #
-            # un_X_ids, _, un_V_ids = [_.to(device) for _ in unlabeld_batch[:-1]]
-            # un_recon, un_mu, un_logvar, un_z = vae(un_X_ids)
-            # un_vae_loss, un_mse_loss_value, un_kld_loss_value = vae_loss_func(un_V_ids, un_recon, un_mu, un_logvar, beta)
-            # if isinstance(un_vae_loss, List) and n_gpu > 0:
-            #     un_vae_loss = un_vae_loss.mean()
-            #
-            # labeled_pred = discriminator(mu)
-            # unlabeled_pred = discriminator(un_mu)
-            #
-            # labeled_real_target = torch.ones(X_ids.size()[0], device=device)
-            # unlabeled_real_target = torch.ones(un_X_ids.size()[0], device=device)
-            #
-            # dsc_loss_in_vae = bce_loss(labeled_pred, labeled_real_target) + bce_loss(unlabeled_pred, unlabeled_real_target)
-            #
-            # if idx<1: logger.info(f'dsc_loss_in_vae: {dsc_loss_in_vae}')
-            #
-            # total_loss = vae_loss + un_vae_loss + dsc_loss_in_vae
-            #
-            # vae.zero_grad()
-            # total_loss.backward()
-            # optim_vae.step()
-            #
-            # #####################
-            # # discriminate step
-            # #####################
-            # with torch.no_grad():
-            #     # _, mu, _, _ = vae(X_ids)
-            #     # _, un_mu, _, _ = vae(un_X_ids)
-            #
-            #     mu_no_grad = mu.detach()
-            #     un_mu_no_grad = un_mu.detach()
-            #
-            # labeled_pred = discriminator(mu_no_grad)
-            # unlabeled_pred = discriminator(un_mu_no_grad)
-            #
-            # labeled_real_target = torch.ones(X_ids.size()[0], device=device)
-            # unlabeled_fake_target = torch.zeros(un_X_ids.size()[0], device=device)
-            #
-            # dsc_loss = bce_loss(labeled_pred, labeled_real_target)+ bce_loss(unlabeled_pred, unlabeled_fake_target)
-            # if idx<1: logger.info(f'dsc_loss: {dsc_loss}')
-            #
-            # discriminator.zero_grad()
-            # dsc_loss.backward()
-            # optim_discriminator.step()
-            #
-            # if idx % 10 == 0 and idx != 0:
-            #     logger.info(f'epoch: {e} - batch: {idx}/{len(train_generator)}')
-            #     logger.info(f'task_model loss: {task_loss}')
-            #     logger.info(f'labeled vae loss: {vae_loss}')
-            #     logger.info(f'labeled mse loss: {mse_loss_value}')
-            #     logger.info(f'labeled kld loss: {kld_loss_value}')
-            #     logger.info(f'unlabeled vae loss: {un_vae_loss}')
-            #     logger.info(f'unlabeled mse loss: {un_mse_loss_value}')
-            #     logger.info(f'unlabeled kld loss: {un_kld_loss_value}')
-            #     logger.info(f'dsc_loss_in_vae: {dsc_loss_in_vae}')
-            #     logger.info(f'dsc_loss: {dsc_loss}')
+            #############
+            # vae step
+            #############
+            recon, mu, logvar, z = vae(V_ids, Mask)
+            vae_loss, mse_loss_value, kld_loss_value = vae_loss_func(V_ids, recon, mu, logvar, beta, Mask)
+            if n_gpu > 0:
+                vae_loss = vae_loss.mean()
+
+            un_X_ids, _, un_V_ids, un_Mask = [_.to(device) for _ in unlabeld_batch[:-1]]
+            un_recon, un_mu, un_logvar, un_z = vae(un_V_ids, un_Mask)
+            un_vae_loss, un_mse_loss_value, un_kld_loss_value = vae_loss_func(un_V_ids, un_recon, un_mu, un_logvar, beta, Mask)
+            if n_gpu > 0:
+                un_vae_loss = un_vae_loss.mean()
+
+            labeled_pred = discriminator(mu)
+            unlabeled_pred = discriminator(un_mu)
+            labeled_real_target = torch.ones(X_ids.size()[0], device=device)
+            unlabeled_real_target = torch.ones(un_X_ids.size()[0], device=device)
+            dsc_loss_in_vae = bce_loss(labeled_pred, labeled_real_target) + bce_loss(unlabeled_pred, unlabeled_real_target)
+            if n_gpu > 0:
+                dsc_loss_in_vae = dsc_loss_in_vae.mean()
+
+            total_loss = vae_loss + un_vae_loss + dsc_loss_in_vae
+
+            vae.zero_grad()
+            total_loss.backward()
+            optim_vae.step()
+
+            #####################
+            # discriminate step
+            #####################
+            mu_no_grad = mu.detach()
+            un_mu_no_grad = un_mu.detach()
+
+            labeled_pred = discriminator(mu_no_grad)
+            unlabeled_pred = discriminator(un_mu_no_grad)
+
+            labeled_real_target = torch.ones(X_ids.size()[0], device=device)
+            unlabeled_fake_target = torch.zeros(un_X_ids.size()[0], device=device)
+
+            dsc_loss = bce_loss(labeled_pred, labeled_real_target)+ bce_loss(unlabeled_pred, unlabeled_fake_target)
+            if n_gpu > 0:
+                dsc_loss = dsc_loss.mean()
+
+            discriminator.zero_grad()
+            dsc_loss.backward()
+            optim_discriminator.step()
+
+            if idx % 10 == 0 and idx != 0:
+                logger.info(f'epoch: {e} - batch: {idx}/{len(train_generator)}')
+                logger.info(f'task_model loss: {task_loss}')
+                logger.info(f'labeled vae loss: {vae_loss}')
+                logger.info(f'labeled mse loss: {mse_loss_value}')
+                logger.info(f'labeled kld loss: {kld_loss_value}')
+                logger.info(f'unlabeled vae loss: {un_vae_loss}')
+                logger.info(f'unlabeled mse loss: {un_mse_loss_value}')
+                logger.info(f'unlabeled kld loss: {un_kld_loss_value}')
+                logger.info(f'dsc_loss_in_vae: {dsc_loss_in_vae}')
+                logger.info(f'dsc_loss: {dsc_loss}')
 
         task_model.eval()
 
@@ -138,7 +140,7 @@ def train(train_generator, dev_generator, pool_generator, task_model, vae, discr
 
             raw_text = batch[-1]
             batch = [_.to(device) for _ in batch[:-1]]
-            X_ids, Y_ids, _ = batch
+            X_ids, Y_ids, _, _ = batch
 
             with torch.no_grad():
                 logits, _ = task_model(X_ids, Y_ids)

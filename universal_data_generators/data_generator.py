@@ -100,7 +100,7 @@ class DataGeneratorW2V(object):
 
 
 class DataGeneratorW2V_VAE(object):
-    def __init__(self, data, batch_size, data_args, vocab_wv, vocab_lm, intent_labels, shuffle=False):
+    def __init__(self, data, batch_size, data_args, training_args, vocab_wv, vocab_lm, intent_labels, shuffle=False):
         """
 
         :param data:  Subset  用indices选取
@@ -111,6 +111,7 @@ class DataGeneratorW2V_VAE(object):
         self.vocab_wv = vocab_wv
         self.vocab_lm = vocab_lm
         self.data_args = data_args
+        self.training_args = training_args
         self.data = data
         self.shuffle = shuffle
         self.steps = len(data) // batch_size
@@ -126,13 +127,16 @@ class DataGeneratorW2V_VAE(object):
         if self.shuffle:
             np.random.shuffle(idxs)
 
-        X, Y, V, T = [], [], [], []
+        X, Y, V, M, T = [], [], [], [], []
         for i, idx in enumerate(idxs):
             text, label_id = self.data[idx]
 
             text_ids = [self.vocab_wv.get(c, self.vocab_wv.get('unk'))
                                                          for c in text[:self.data_args.max_seq_length]]
-            text_vocab_ids = [1 if _ in text else 0 for _ in self.vocab_lm]
+            text_vocab_ids = [self.vocab_lm.get('[CLS]')] + [self.vocab_lm.get(c, self.vocab_lm.get('[UNK]'))
+                                                             for c in text[:self.training_args.rec_max_length-1]]
+
+            att_mask = [1] * len(text_vocab_ids)
 
             if isinstance(label_id, str):
                 label_id = self.intent_labels.index(label_id)
@@ -140,13 +144,15 @@ class DataGeneratorW2V_VAE(object):
             X.append(text_ids)
             Y.append(label_id)
             V.append(text_vocab_ids)
+            M.append(att_mask)
             T.append(text)
 
             if len(X) == self.batch_size or i == len(self.data) - 1:
                 X = torch.tensor(seq_padding(X), dtype=torch.long)
-                V = torch.tensor(V, dtype=torch.float)  # [b, V_size]
+                V = torch.tensor(seq_padding(V, self.training_args.rec_max_length), dtype=torch.long)
+                M = torch.tensor(seq_padding(M, self.training_args.rec_max_length), dtype=torch.long)
                 Y = torch.tensor(Y, dtype=torch.long)
 
-                yield X, Y, V, T
+                yield X, Y, V, M, T
 
-                X, Y, V, T = [], [], [], []
+                X, Y, V, M, T = [], [], [], [], []

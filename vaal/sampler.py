@@ -16,9 +16,9 @@ def sample(vae, discriminator, pool_generator, budget, args):
         if CHECK_DEBUG and idx > 0:
             break
 
-        X_ids = batch[0].to(device)
+        _,_,V_ids,Mask = [_.to(device) for _ in batch[:-1]]
         with torch.no_grad():
-            _, mu, _, _ = vae(X_ids)
+            _, mu, _, _ = vae(V_ids, Mask)
             pred = discriminator(mu)
             pred_list.extend(-pred)
 

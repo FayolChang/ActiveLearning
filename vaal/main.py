@@ -21,9 +21,12 @@ from vaal.al import ActiveLearningData, get_balanced_sample_indices
 from vaal.solver import VAE, Discriminator
 from vaal.training_args import TrainingArguments
 
+
+DEBUG_CHECK = False
+
 num_init_samples = 500
 pool_batch_size = 128
-budget = 500
+budget = 5 if DEBUG_CHECK else 500
 
 
 @dataclass
@@ -71,10 +74,11 @@ else:
 active_learning_data.acquire(initial_samples_indices)
 
 vocab_wv, id2embeddings = load_vocab_w2v()
-vocab_lm = load_simple_vocab.load_vocab(remove_sign=True)
+vocab_lm = load_simple_vocab.load_simple_vocab(remove_sign=True)
 train_generator = data_generator.DataGeneratorW2V_VAE(active_learning_data.train_data,
                                                       training_args.batch_size,
                                                       data_args,
+                                                      training_args,
                                                       vocab_wv,
                                                       vocab_lm,
                                                       intent_labels,
@@ -82,6 +86,7 @@ train_generator = data_generator.DataGeneratorW2V_VAE(active_learning_data.train
 pool_generator = data_generator.DataGeneratorW2V_VAE(active_learning_data.pool_data,
                                                      pool_batch_size,
                                                      data_args,
+                                                     training_args,
                                                      vocab_wv,
                                                      vocab_lm,
                                                      intent_labels)
@@ -90,6 +95,7 @@ dev_data = [(_['text'], _['label']) for _ in json.load((Path(common_data_path)/'
 dev_generator = data_generator.DataGeneratorW2V_VAE(dev_data,
                                                     training_args.batch_size,
                                                     data_args,
+                                                    training_args,
                                                     vocab_wv,
                                                     vocab_lm,
                                                     intent_labels)
@@ -101,9 +107,9 @@ task_model = TextCNN(torch.tensor(id2embeddings, dtype=torch.float, device=train
 config = AutoConfig.from_pretrained(pretrained_model_name_or_path=str(bert_model_path))
 vae = VAE.from_pretrained(pretrained_model_name_or_path=str(bert_model_path),
                           config=config,
-                          z_dim=256,
-                          vocab_size=len(vocab_lm))
-discriminator = Discriminator(z_dim=256)
+                          vocab_lm_size=len(vocab_lm),
+                          args=training_args)
+discriminator = Discriminator(z_dim=training_args.z_dim)
 
 task_model.to(training_args.device)
 vae.to(training_args.device)
@@ -126,16 +132,16 @@ while True:
     logger.info(f'dev acc: {metric}')
 
     # sample
-    # candidate_indices = sampler.sample(vae, discriminator, pool_generator, budget, training_args)
-    # data_indices = active_learning_data.get_pool_indices(candidate_indices)
-    # targets = get_targets(active_learning_data.pool_data)
-    # candidate_targets = targets[data_indices].detach().cpu().numpy()
-    # candidate_targets_names = [intent_labels[_] for _ in candidate_targets]
-    #
-    # logger.info(f'acquired label distribution: ')
-    # logger.info(collections.Counter(candidate_targets_names).most_common())
-    #
-    # active_learning_data.acquire(candidate_indices)
+    candidate_indices = sampler.sample(vae, discriminator, pool_generator, budget, training_args)
+    data_indices = active_learning_data.get_pool_indices(candidate_indices)
+    targets = get_targets(active_learning_data.pool_data)
+    candidate_targets = targets[candidate_indices].detach().cpu().numpy()
+    candidate_targets_names = [intent_labels[_] for _ in candidate_targets]
+
+    logger.info(f'acquired label distribution: ')
+    logger.info(collections.Counter(candidate_targets_names).most_common())
+
+    active_learning_data.acquire(candidate_indices)
 
 
 
