@@ -97,31 +97,31 @@ dev_generator = data_generator.DataGeneratorW2V_VAE(dev_data,
                                                     vocab_lm,
                                                     intent_labels)
 
-#######################################
-# model construction
-#######################################
-task_model = TextCNN(torch.tensor(id2embeddings, dtype=torch.float, device=training_args.device), num_labels=num_classes)
-config = AutoConfig.from_pretrained(pretrained_model_name_or_path=str(bert_model_path))
-vae = VAE.from_pretrained(pretrained_model_name_or_path=str(bert_model_path),
-                          config=config,
-                          vocab_lm_size=len(vocab_lm),
-                          args=training_args)
-discriminator = Discriminator(z_dim=training_args.z_dim)
-
-task_model.to(training_args.device)
-vae.to(training_args.device)
-discriminator.to(training_args.device)
-
-if training_args.n_gpu > 0:
-    task_model = nn.DataParallel(task_model)
-    vae = nn.DataParallel(vae)
-    discriminator = nn.DataParallel(discriminator)
-
-
 while True:
 
     if len(active_learning_data.train_data) > 5000:
         break
+
+    #######################################
+    # model construction
+    #######################################
+    task_model = TextCNN(torch.tensor(id2embeddings, dtype=torch.float, device=training_args.device),
+                         num_labels=num_classes)
+    config = AutoConfig.from_pretrained(pretrained_model_name_or_path=str(bert_model_path))
+    vae = VAE.from_pretrained(pretrained_model_name_or_path=str(bert_model_path),
+                              config=config,
+                              vocab_lm_size=len(vocab_lm),
+                              args=training_args)
+    discriminator = Discriminator(z_dim=training_args.z_dim)
+
+    task_model.to(training_args.device)
+    vae.to(training_args.device)
+    discriminator.to(training_args.device)
+
+    if training_args.n_gpu > 0:
+        task_model = nn.DataParallel(task_model)
+        vae = nn.DataParallel(vae)
+        discriminator = nn.DataParallel(discriminator)
 
     # train
     metric = trainer.train(train_generator, dev_generator, pool_generator, task_model, vae, discriminator, training_args)
