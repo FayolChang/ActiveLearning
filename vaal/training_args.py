@@ -16,6 +16,7 @@ class TrainingArguments:
     rec_max_length: int = field(default=30)
     z_dim: int = field(default=128)
     budget: int = field(default=100)
+    check_debug: bool = field(default=False)
 
     output_dir: str = field(default=str(Path(data_dir)/'outputs'), metadata={'help': 'output dir'})
 

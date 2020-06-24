@@ -22,8 +22,6 @@ from vaal.solver import VAE, Discriminator
 from vaal.training_args import TrainingArguments
 
 
-DEBUG_CHECK = False
-
 num_init_samples = 500
 pool_batch_size = 128
 

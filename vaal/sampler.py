@@ -1,7 +1,6 @@
 import torch
 
 
-CHECK_DEBUG = False
 
 
 def sample(vae, discriminator, pool_generator, budget, args):
@@ -13,7 +12,7 @@ def sample(vae, discriminator, pool_generator, budget, args):
     pred_list = []
     for idx, batch in enumerate(pool_generator):
 
-        if CHECK_DEBUG and idx > 0:
+        if args.check_debug and idx > 0:
             break
 
         _,_,V_ids,Mask = [_.to(device) for _ in batch[:-1]]
