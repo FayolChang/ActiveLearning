@@ -50,8 +50,8 @@ def train(train_generator, dev_generator, pool_generator, task_model, vae, discr
         discriminator.train()
         for idx, (labeled_batch, unlabeld_batch) in enumerate(zip(train_generator, pool_generator)):
 
-            # if args.check_debug and idx > 0:
-            #     break
+            if args.check_debug and idx > 0:
+                break
 
             raw_text = labeled_batch[-1]
             labeled_batch = [_.to(device) for _ in labeled_batch[:-1]]

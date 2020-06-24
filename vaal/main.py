@@ -12,6 +12,7 @@ from batchbald_redux.repeated_mnist import get_targets
 from configuration.config import common_data_path, intent_labels, data_dir, bert_model_path, logger
 from universal_data_generators import data_generator
 from universal_models.model import TextCNN
+from utils.utils import seq_padding
 from utils.vocab import load_vocab_w2v
 from vaal import trainer, sampler, load_simple_vocab
 from vaal.al import ActiveLearningData, get_balanced_sample_indices
@@ -139,6 +140,43 @@ while True:
     logger.info(collections.Counter(candidate_targets_names).most_common())
 
     active_learning_data.acquire(candidate_indices)
+
+    # vae predict validation
+    vocab_lm_List = list(vocab_lm.keys())
+
+    sampled_dev_data = [_ for idx, _ in enumerate(dev_data) if idx in [100, 200, 300, 400, 500]]
+    z_list = []
+    for text, label in sampled_dev_data:
+        text_ids = [vocab_lm.get('[CLS]')] + [vocab_lm.get(c, vocab_lm.get('[UNK]')) for c in text[:training_args.rec_max_length-1]]
+        att_mask = [1] * len(text_ids)
+        text_ids = torch.tensor(seq_padding([text_ids], training_args.rec_max_length), dtype=torch.long)
+        att_mask = torch.tensor(seq_padding([att_mask], training_args.rec_max_length), dtype=torch.long)
+        sampled_recon, sampled_mu, sampled_logvar, sampled_z = vae(text_ids, att_mask)  # [1,30,2664]
+
+        sampled_recon_ids = torch.argmax(sampled_recon, dim=-1)  # [1,30,1]
+        sampled_recon_ids = sampled_recon_ids[0].detach().cpu().numpy()
+        sampled_recon_text = ''.join([vocab_lm_List[vid] for vid in sampled_recon_ids])
+
+        logger.info(f'raw sentence: {text}')
+        logger.info(f'reconstruct sentence: {sampled_recon_text}\n')
+
+        z_list.append((text, sampled_z[0], sampled_recon_text))
+
+    for idx, z_ in enumerate(z_list[1:]):
+        sim_score = torch.cosine_similarity(z_list[0][1], z_[1], dim=-1)
+        logger.info(f'0 - {idx+1} sim score: {sim_score.item():.4f}')
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
