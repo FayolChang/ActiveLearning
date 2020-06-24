@@ -26,7 +26,6 @@ DEBUG_CHECK = False
 
 num_init_samples = 500
 pool_batch_size = 128
-budget = 5 if DEBUG_CHECK else 500
 
 
 @dataclass
@@ -132,7 +131,7 @@ while True:
     logger.info(f'dev acc: {metric}')
 
     # sample
-    candidate_indices = sampler.sample(vae, discriminator, pool_generator, budget, training_args)
+    candidate_indices = sampler.sample(vae, discriminator, pool_generator, training_args.budget, training_args)
     data_indices = active_learning_data.get_pool_indices(candidate_indices)
     targets = get_targets(active_learning_data.pool_data)
     candidate_targets = targets[candidate_indices].detach().cpu().numpy()

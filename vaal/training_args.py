@@ -15,6 +15,7 @@ class TrainingArguments:
     beta: float = field(default=1)
     rec_max_length: int = field(default=30)
     z_dim: int = field(default=128)
+    budget: int = field(default=100)
 
     output_dir: str = field(default=str(Path(data_dir)/'outputs'), metadata={'help': 'output dir'})
 
