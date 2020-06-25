@@ -161,7 +161,7 @@ class DataGeneratorW2V_VAE(object):
         self.vocab_wv_size = len(self.vocab_wv)
 
     def __len__(self):
-        return self.data // self.batch_size
+        return len(self.data) // self.batch_size
 
     def __iter__(self):
         idxs = list(range(len(self.data)))
