@@ -156,13 +156,12 @@ class DataGeneratorW2V_VAE(object):
         self.training_args = training_args
         self.data = data
         self.shuffle = shuffle
-        self.steps = len(data) // batch_size
         self.total_data_size = len(data)
         self.vocab_lm_size = len(self.vocab_lm)
         self.vocab_wv_size = len(self.vocab_wv)
 
     def __len__(self):
-        return self.steps
+        return self.data // self.batch_size
 
     def __iter__(self):
         idxs = list(range(len(self.data)))
@@ -189,7 +188,7 @@ class DataGeneratorW2V_VAE(object):
             M.append(att_mask)
             T.append(text)
 
-            if len(X) == self.batch_size or i == len(self.data) - 1:
+            if len(X) == self.batch_size or (i == len(self.data) - 1 and len(X) > 1):
                 X = torch.tensor(seq_padding(X), dtype=torch.long)
                 V = torch.tensor(seq_padding(V, self.training_args.rec_max_length), dtype=torch.long)
                 M = torch.tensor(seq_padding(M, self.training_args.rec_max_length), dtype=torch.long)
