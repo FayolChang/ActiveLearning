@@ -188,7 +188,7 @@ class DataGeneratorW2V_VAE(object):
             M.append(att_mask)
             T.append(text)
 
-            if len(X) == self.batch_size or (i == len(self.data) - 1 and len(X) > 1):
+            if len(X) == self.batch_size or (i == len(self.data) - 1 and len(X) >= 8):
                 X = torch.tensor(seq_padding(X), dtype=torch.long)
                 V = torch.tensor(seq_padding(V, self.training_args.rec_max_length), dtype=torch.long)
                 M = torch.tensor(seq_padding(M, self.training_args.rec_max_length), dtype=torch.long)
